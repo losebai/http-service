@@ -1,12 +1,6 @@
-/******************************
-*   author: yuesong-feng
-*   
-*
-*
-******************************/
-#include "Epoll.h"
-#include "util.h"
-#include "Channel.h"
+#include "headers/Epoll.h"
+#include "headers/util.h"
+#include "headers/Channel.h"
 #include <unistd.h>
 #include <string.h>
 

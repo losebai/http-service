@@ -1,12 +1,12 @@
-#include "Server.h"
-#include "Socket.h"
-#include "Acceptor.h"
+#include "headers/Server.h"
+#include "headers/Socket.h"
+#include "headers/Acceptor.h"
 #include <functional>
-#include "ThreadPool.h"
-#include "EventLoop.h"
+#include "headers/ThreadPool.h"
+#include "headers/EventLoop.h"
 #include <string.h>
 #include <unistd.h>
-#include "Connection.h"
+#include "headers/Connection.h"
 
 #define READ_BUFFER 1024
 

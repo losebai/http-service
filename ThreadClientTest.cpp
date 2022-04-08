@@ -2,11 +2,11 @@
 #include <unistd.h>
 #include <string.h>
 #include <functional>
-#include "header/util.h"
-#include "header/Buffer.h"
-#include "header/InetAddress.h"
-#include "header/Socket.h"
-#include "header/ThreadPool.h"
+#include "headers/util.h"
+#include "headers/Buffer.h"
+#include "headers/InetAddress.h"
+#include "headers/Socket.h"
+#include "headers/ThreadPool.h"
 
 using namespace std;
 

@@ -1,10 +1,10 @@
-#include "Connection.h"
-#include "Socket.h"
-#include "Channel.h"
+#include "headers/Connection.h"
+#include "headers/Socket.h"
+#include "headers/Channel.h"
 #include <unistd.h>
 #include <string.h>
-#include "util.h"
-#include "Buffer.h"
+#include "headers/util.h"
+#include "headers/Buffer.h"
 #define READ_BUFFER 1024
 
 // Connection::Connection(EventLoop *_loop, Socket *_sock) : loop(_loop), sock(_sock), channel(nullptr){

@@ -1,13 +1,7 @@
-/******************************
-*   author: yuesong-feng
-*   
-*
-*
-******************************/
-#include "EventLoop.h"
-#include "Epoll.h"
-#include "Channel.h"
-#include "ThreadPool.h"
+#include "headers/EventLoop.h"
+#include "headers/Epoll.h"
+#include "headers/Channel.h"
+#include "headers/ThreadPool.h"
 #include <vector>
 
 EventLoop::EventLoop() : ep(nullptr), threadPool(nullptr), quit(false){

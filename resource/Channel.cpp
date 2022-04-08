@@ -1,7 +1,7 @@
-#include "Channel.h"
-#include "EventLoop.h"
+#include "headers/Channel.h"
+#include "headers/EventLoop.h"
 #include <unistd.h>
-#include "Socket.h"
+#include "headers/Socket.h"
 #include <sys/epoll.h>
 
 // Channel::Channel(EventLoop *_loop, int _fd) : loop(_loop), fd(_fd), events(0), revents(0), inEpoll(false)

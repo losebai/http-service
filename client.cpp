@@ -10,16 +10,15 @@ using namespace std;
 
 int main() {
     Socket *sock = new Socket();
-    InetAddress *addr = new InetAddress("127.0.0.1", 9999);
+    InetAddress *addr = new InetAddress("150.95.9.112", 80);
     sock->connect(addr);
 
     int sockfd = sock->getFd();
-
     Buffer *sendBuffer = new Buffer();
     Buffer *readBuffer = new Buffer();
     
+    sendBuffer->setBuf("GET / HTTP/1.1 \nHost: hackr.jp \r\nConnection: keep-alive\r\nAccept: *\r\nAccept-Encoding: gzip, deflate, br\r\nAccept-Language: zh-CN\r\nUser-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.60 Safari/537.36 Edg/100.0.1185.29\r\nReferer: http://hackr.jp/");
     while(true){
-        sendBuffer->getline();
         ssize_t write_bytes = write(sockfd, sendBuffer->c_str(), sendBuffer->size());
         if(write_bytes == -1){
             printf("socket already disconnected, can't write any more!\n");

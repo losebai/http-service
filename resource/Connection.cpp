@@ -6,7 +6,7 @@
 #include "headers/util.h"
 #include "headers/Buffer.h"
 #define READ_BUFFER 1024
-#include <iostream>
+#include<sstream>
 
 // Connection::Connection(EventLoop *_loop, Socket *_sock) : loop(_loop), sock(_sock), channel(nullptr){
 //     channel = new Channel(loop, sock->getFd());
@@ -16,7 +16,7 @@
 // }
 
 // day 11
-Connection::Connection(EventLoop *_loop, Socket *_sock) : loop(_loop), sock(_sock), channel(nullptr), inBuffer(new std::string()), readBuffer(nullptr)
+Connection::Connection(EventLoop* _loop, Socket* _sock) : loop(_loop), sock(_sock), channel(nullptr), inBuffer(new std::string()), readBuffer(nullptr)
 {
     channel = new Channel(loop, sock->getFd());
     channel->enableRead();
@@ -84,43 +84,48 @@ void Connection::send(int sockfd)
     strcpy(buf, readBuffer->c_str());
     int data_size = readBuffer->size();
     int data_left = data_size;
-    while (data_left > 0)
-    {
-        std::string sendStr = "HTTP/1.1 200 OK\n";
-        sendStr += "Date: Mon, 27 Jul 2009 12:28:53 GMT\n";
-        sendStr += "Server: Apache/2.2.14 (Win32)\n";
-        sendStr += "Last-Modified: Wed, 22 Jul 2009 19:15:56 GMT\n";
-        sendStr += "Content-Length: " + data_size;
-        sendStr += "\n";
-        sendStr += "Content-Type: text/html\n";
-        sendStr += "Connection: Closed\n";
-        sendStr += "\n";
-        sendStr += "<html><body>";
-        sendStr += "<h1> This is the HTTP packet you requested</h1>";
-        bool is = false;
-        std::string temp = "";
-        for(int i = 0; i < data_size;i++){
-            if(buf[i] == '\n'){
-                sendStr += "<h2>";
-                is = true;
-            }
-            if(is){
-                 sendStr += "</h2>";
-                 is = false;
-               
-                  temp = "";
-            }
-            sendStr += buf[i];
-            temp +=  buf[i];
-          
+    std::stringstream content;
+    std::string sendStr = "HTTP/1.1 200 OK\n";
+    sendStr += "Date: Mon, 27 Jul 2009 12:28:53 GMT\n";
+    sendStr += "Server: Apache/2.2.14 (Win32)\n";
+    sendStr += "Last-Modified: Wed, 22 Jul 2009 19:15:56 GMT\n";
+    content << "Content-Length:" << data_size << "\n";
+    sendStr += content.str();
+    sendStr += "Content-Type: text/html\n";
+    sendStr += "Connection: Closed\n";
+    sendStr += "\n";
+    write(sockfd, sendStr.c_str(), sendStr.length());
+    sendStr.clear();
+    sendStr += "<html><body>";
+    sendStr += "<h1> This is the HTTP packet you requested</h1>";
+    data_size += sendStr.length();
+    bool is = false;
+    std::string temp = "";
+    for (int i = 0; i < data_size; i++) {
+        if (buf[i] == '\n') {
+            sendStr += "<h2>";
+            is = true;
         }
-        sendStr += "</body></html>";
-        ssize_t bytes_write = write(sockfd, sendStr.c_str(), sendStr.length());
+        if (is) {
+            sendStr += "</h2>";
+            is = false;
+
+            temp = "";
+        }
+        sendStr += buf[i];
+        temp += buf[i];
+
+    }
+    ssize_t bytes_write = 0;
+    while (data_left > 0 )
+    {
+        bytes_write = write(sockfd, sendStr.substr(bytes_write, sendStr.length()).c_str(), sendStr.length());
         if (bytes_write == -1 && errno == EAGAIN)
         {
+            sendStr += "</body></html>";
+            sendStr += "\n";
             break;
         }
         data_left -= bytes_write;
-
     }
 }

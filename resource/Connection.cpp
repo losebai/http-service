@@ -8,14 +8,7 @@
 #define READ_BUFFER 1024
 #include<sstream>
 
-// Connection::Connection(EventLoop *_loop, Socket *_sock) : loop(_loop), sock(_sock), channel(nullptr){
-//     channel = new Channel(loop, sock->getFd());
-//     std::function<void()> cb = std::bind(&Connection::echo, this, sock->getFd());
-//     channel->setCallback(cb); // 回调
-//     channel->enableReading(); //监听
-// }
 
-// day 11
 Connection::Connection(EventLoop* _loop, Socket* _sock) : loop(_loop), sock(_sock), channel(nullptr), inBuffer(new std::string()), readBuffer(nullptr)
 {
     channel = new Channel(loop, sock->getFd());

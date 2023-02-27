@@ -8,7 +8,7 @@
 #include <string>
 Socket::Socket() : fd(-1)
 {
-    fd = socket(AF_INET, SOCK_STREAM, 0);
+    fd = socket(AF_INET, SOCK_STREAM, 0); // ipv 和 流式套接字
     errif(fd == -1, "socket create error");
 }
 Socket::Socket(int _fd) : fd(_fd)
@@ -32,7 +32,10 @@ void Socket::bind(InetAddress *_addr)
 }
 
 void Socket::listen()
-{
+{  //，用于将一个套接字 fd 标记为被动套接字，表示该套接字用于监听来自其它套接字的连接请求。
+    //SOMAXCONN 参数指定了内核允许在套接字未完成 3 次握手之前排队的最大连接数。
+    //因此，调用 listen 函数后，套接字 fd 会进入监听状态，可以开始接收客户端连接请求
+   // 。如果请求被接受，将返回一个新的已连接套接字（connected socket），它用于与客户端进行通信。
     errif(::listen(fd, SOMAXCONN) == -1, "socket listen error");
 }
 void Socket::setnonblocking()
@@ -46,7 +49,7 @@ int Socket::accept(InetAddress *_addr)
     int clnt_sockfd = -1;
     bzero(&addr, sizeof(addr));
     socklen_t addr_len = sizeof(addr);
-    if (fcntl(fd, F_GETFL) & O_NONBLOCK)
+    if (fcntl(fd, F_GETFL) & O_NONBLOCK) // 检查文件描述符 fd 是否设置了 O_NONBLOCK 非阻塞标志位
     {
         while (true)
         {

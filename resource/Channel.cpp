@@ -56,7 +56,7 @@ void Channel::handleEvent()
 
 void Channel::enableRead()
 {
-    events |= EPOLLIN | EPOLLPRI;
+    events |= EPOLLIN | EPOLLPRI; // el 和 ep
     loop->updateChannel(this);
 }
 

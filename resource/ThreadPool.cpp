@@ -21,21 +21,13 @@ ThreadPool::ThreadPool(int size) : stop(false){
 }
 ThreadPool::~ThreadPool(){
     {
+        //在这个{}作用域内对std::mutex加锁，出了作用域会自动解锁，不需要调用unlock()
         std::unique_lock<std::mutex> lock(tasks_mtx);
         stop = true;
     }
-    cv.notify_all();
+    cv.notify_all(); //唤醒所有wait
     for(std::thread &th : threads){
         if(th.joinable())
-            th.join();
+            th.join(); // 等待
     }
 }
-// void ThreadPool::add(std::function<void()> func){
-//     { //在这个{}作用域内对std::mutex加锁，出了作用域会自动解锁，不需要调用unlock()
-//         std::unique_lock<std::mutex> lock(tasks_mtx);
-//         if(stop)
-//             throw std::runtime_error("ThreadPool already stop, can't add task any more");
-//         tasks.emplace(func);
-//     }
-//     cv.notify_one();    //唤醒所以wait
-// }

@@ -7,10 +7,10 @@
 #define MAX_EVENTS 1000
 
 Epoll::Epoll() : epfd(-1), events(nullptr){
-    epfd = epoll_create1(0);
+    epfd = epoll_create1(0); // 用于创建一个 epoll 实例并返回对应的文件描述符。
     errif(epfd == -1, "epoll create error");
     events = new epoll_event[MAX_EVENTS];
-    bzero(events, sizeof(*events) * MAX_EVENTS);
+    bzero(events, sizeof(*events) * MAX_EVENTS); // bzero(events, sizeof(*events) * MAX_EVENTS) 的作用是将 events 数组的所有元素清零，以便下一次使用。
 }
 
 Epoll::~Epoll(){
@@ -38,7 +38,8 @@ void Epoll::updateChannel(Channel *channel){
     struct epoll_event ev;
     bzero(&ev, sizeof(ev));
     ev.data.ptr = channel;
-    ev.events = channel->getEvents();
+    ev.events = channel->getEvents(); 
+    // 更新或者新增epll事件
     if(!channel->getInEpoll()){
         errif(epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev) == -1, "epoll add error");
         channel->setInEpoll();

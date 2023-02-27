@@ -1,6 +1,6 @@
 
-#include "headers/Server.h"
-#include "headers/EventLoop.h"
+#include "Server.h"
+#include "EventLoop.h"
 
 int main(){
     EventLoop *loop = new EventLoop();

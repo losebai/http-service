@@ -5,11 +5,9 @@
 #include <iostream>
 #include <arpa/inet.h>
 
-
 #include "Reactor.cpp"
 
 using namespace std;
-
 
 
 int main() {
@@ -41,6 +39,5 @@ int main() {
     }
 
     EventLoop* loop = new EventLoop();
-    loop->AcceptConnection(listenfd);
-    loop->eventLopp();
+    loop->eventLopp(listenfd);
 }

@@ -21,6 +21,7 @@ Socket::~Socket()
     if (fd != -1)
     {
         close(fd);
+        printf("fd close: %d", fd);
         fd = -1;
     }
 }

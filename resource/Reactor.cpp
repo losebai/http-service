@@ -34,11 +34,11 @@ public:
         close(fd);
     }
 
-    virtual void handleRead()
+    virtual ssize_t handleRead()
     {
         char buf[MAXLINE];
         ssize_t n = read(fd, buf, MAX_EVENTS); // 读取fd的MAX_EVENTS字节数据到buf中
-        cout << "read data ok .." << endl;
+        cout << "read data  .." << endl;
         if (n == 0)
         {
             cout << "client close" << endl;
@@ -52,7 +52,7 @@ public:
             // EWOULDBLOCK 或 EAGAIN：操作非阻塞，但请求的操作会阻塞（例如在等待一个连接时），或者没有更多数据可读。
             if (errno == EINTR || errno == EWOULDBLOCK || errno == EAGAIN)
             {
-                return;
+                return -1;
             }
             else
             {
@@ -66,9 +66,10 @@ public:
             cout << "recv: \r\n"
                  << buf << endl;
         }
+        return n;
     }
 
-    virtual void handleWrite()
+    virtual ssize_t handleWrite()
     {
         char buf[] = "handleWrite .....";
         ssize_t n = write(fd, buf, strlen(buf));
@@ -80,6 +81,7 @@ public:
         // 写完数据就关闭客户端连接
         // close(fd);
         // delete this;
+        return n;
     }
 
     virtual int getFd()
@@ -114,7 +116,7 @@ public:
     void registerEventHandler(EventHandler *eventHandler)
     {
         struct epoll_event event;
-        event.events = EPOLLIN | EPOLLET;
+        event.events = EPOLLIN; // POLLIN表示关心socket的读事件，EPOLLET表示使用边缘触发模式。在边缘触发模式下，只有当socket状态变化时，epoll_wait才会返回。这种模式需要使用非阻塞socket。
         event.data.ptr = eventHandler;
         // event.data.fd = eventHandler->getFd();
         cout << "epoll_fd " << epoll_fd << "  add fd" << eventHandler->getFd() << endl;
@@ -129,8 +131,19 @@ public:
     void eventLopp(int server_fd)
     {
 
+        struct epoll_event event;
+        event.events = EPOLLET; // POLLIN表示关心socket的读事件，EPOLLET表示使用边缘触发模式。在边缘触发模式下，只有当socket状态变化时，epoll_wait才会返回。这种模式需要使用非阻塞socket。
+        EventHandler *conn = new Connection(server_fd);
+        event.data.ptr = conn;
+        event.data.fd = conn->getFd();
+        cout << "epoll_fd " << epoll_fd << "  add fd " << conn->getFd() << endl;
+        // 将需要监听的fd放到epoll缓存区中
+        if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, conn->getFd(), &event) < 0)
+        {
+            cout << "epoll_ctl error" << endl;
+            close(conn->getFd());
+        }
         struct epoll_event events[MAX_EVENTS];
-        AcceptConnection(server_fd);
         while (true)
         {
             // 等待要epoll_fd上注册的fd的事件发生
@@ -153,55 +166,59 @@ public:
             for (int i = 0; i < nf; i++)
             {
                 Connection *eventHandler = (Connection *)(events[i].data.ptr);
+                cout << "events :" << events[i].data.fd << " handler ...." << endl;
                 if (events[i].events & EPOLLERR || events[i].events & EPOLLHUP)
                 {
                     cout << events[i].data.fd << "error .." << endl;
-                    close(events[i].data.fd);
+                    close(events[i].data.fd); // 关闭事件
+                    if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, eventHandler->getFd(), &events[i]) < 0)
+                    {
+                        cout << "epoll_ctl del error" << endl;
+                    }
                     continue;
                 }
-                else if (server_fd == events[i].data.fd)
+                else if (events[i].events & EPOLLIN)
                 {
-                    while (true)
+                    cout << "events :" << events[i].data.fd << " read....." << endl;
+                    if (server_fd == events[i].data.fd)
                     {
-                        // 等待链接事件
-                        cout << events[i].data.fd << " wait ....." << endl;
-                        int confd = AcceptConnection(server_fd);
-                        if (confd == -1)
+                        while (true)
                         {
-                            break;
+                            // 等待链接事件
+                            cout << "events :" << events[i].data.fd << " wait ....." << endl;
+                            int confd = AcceptConnection(server_fd);
+                            if (confd == -1)
+                            {
+                                break;
+                            }
+                        }
+                    }
+                    ssize_t size = eventHandler->handleRead();
+                    events[i].events = EPOLLOUT;
+                    if (size == 0)
+                    {
+                        // 客户端关闭连接时，服务端会接收到一个FIN（结束）的数据包，因此服务端会触发该客户端对应的socket文件描述符上的可读事件
+                        cout << "epoll del fd : " << eventHandler->getFd() << endl;
+                        // 删除之后，后续都接受不了
+                        if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, eventHandler->getFd(), &events[i]) < 0)
+                        {
+                            cout << "epoll_ctl del error" << endl;
                         }
                     }
                 }
-                else
+                else if (events[i].events & EPOLLOUT)
                 {
-                    cout << events[i].data.fd << " handler ...." << endl;
-                    int evfd = eventHandler->getFd();
-                    if (events[i].events & EPOLLIN)
-                    {
-                        cout << events[i].data.fd << " read....." << endl;
-                        eventHandler->handleRead();
-                        // eventHandler->handleWrite(); // 接受完成之后，立即发送一条消息
-
-                        // close(events[i].data.fd); // 触发一个读取事件
-                        // close(eventHandler->getFd());
-                        // epoll_ctl(epoll_fd, EPOLL_CTL_DEL, events[i].data.fd, NULL); // 删除之后，后续都接受不了
-                    }
-                    if (events[i].events & EPOLLOUT)
-                    {
-                        cout << events[i].data.fd << " write....." << endl;
-                        eventHandler->handleWrite();
-                    }
-
-                    if (eventHandler->getFd() == -1)
-                    {
-                        cout << "epoll_fd del " << events[i].data.fd << endl;
-                        epoll_ctl(epoll_fd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
-                    }
-
-                    // close(events[i].data.fd);
-                    cout << "for i " << events[i].data.fd << endl
-                         << "eventHandler->getFd() " << eventHandler->getFd() << endl;
+                    cout << events[i].data.fd << " write....." << endl;
+                    ssize_t size = eventHandler->handleWrite();
+                    events[i].events = EPOLLIN;
                 }
+
+                if (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, eventHandler->getFd(), &events[i]) < 0)
+                {
+                    cout << "epoll_ctl mod error" << endl;
+                }
+                cout << "for i " << events[i].data.fd << endl
+                     << "eventHandler->getFd() " << eventHandler->getFd() << endl;
             }
         }
     }

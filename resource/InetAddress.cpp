@@ -1,5 +1,5 @@
 #include "headers/InetAddress.h"
-#include <string.h>
+#include <cstring>
 InetAddress::InetAddress()
 {
     bzero(&addr, sizeof(addr));
@@ -13,8 +13,7 @@ InetAddress::InetAddress(const char *ip, uint16_t port)
 }
 
 InetAddress::~InetAddress()
-{
-}
+= default;
 void InetAddress::setInetAddr(sockaddr_in _addr)
 {
     addr = _addr;

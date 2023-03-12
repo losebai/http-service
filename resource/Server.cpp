@@ -71,13 +71,14 @@ void Server::handleReadEvent(int sockfd)
     }
 }
 
+// 建立新的连接
 void Server::newConnection(Socket *sock)
 {
     if (sock->getFd() != -1)
     {
         int random = sock->getFd() % subReactors.size();
         Connection *conn = new Connection(subReactors[random], sock);
-        std::function<void(int)> cb = std::bind(&Server::deleteConnetion, this, std::placeholders::_1);
+        std::function<void(int)> cb = std::bind(&Server::deleteConnetion, this, std::placeholders::_1); // 删除连接的回调。关闭的
         conn->setDeleteConnectionCallback(cb);
         connections[sock->getFd()] = conn;
     }

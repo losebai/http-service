@@ -14,10 +14,10 @@ Connection::Connection(EventLoop* _loop, Socket* _sock) : loop(_loop), sock(_soc
     channel = new Channel(loop, sock->getFd());
     channel->enableRead();
     channel->useET(); // 使用et
-    std::function<void()> cb = std::bind(&Connection::echo, this, sock->getFd());
+    std::function<void()> cb = std::bind(&Connection::echo, this, sock->getFd()); // 读取chanl的回调，就是一个消费channel
     channel->setReadCallback(cb);
-    channel->setUseThreadPool(true);
-    readBuffer = new Buffer();
+    channel->setUseThreadPool(true); // 使用线程池
+    readBuffer = new Buffer(); // 重置缓冲区
 }
 
 Connection::~Connection()
@@ -111,7 +111,8 @@ void Connection::send(int sockfd)
     }
     ssize_t bytes_write = 0;
     while (data_left > 0 )
-    {
+    {   
+        // 发送给客户端
         bytes_write = write(sockfd, sendStr.substr(bytes_write, sendStr.length()).c_str(), sendStr.length());
         if (bytes_write == -1 && errno == EAGAIN)
         {

@@ -1,6 +1,6 @@
 #pragma once
 #include <arpa/inet.h>
-#include <errno.h>
+#include <cerrno>
 
 class Socket;
 

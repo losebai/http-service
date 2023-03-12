@@ -9,8 +9,8 @@ Acceptor::Acceptor(EventLoop *_loop) : loop(_loop), sock(nullptr), acceptChannel
     sock = new Socket();
     InetAddress *addr = new InetAddress("172.26.59.146", 9999);
     sock->bind(addr);
-    sock->listen();
-    acceptChannel = new Channel(loop, sock->getFd());
+    sock->listen(); // 监听
+    acceptChannel = new Channel(loop, sock->getFd()); 
     std::function<void()> cb = std::bind(&Acceptor::acceptConnection, this);
     acceptChannel->setReadCallback(cb);
     acceptChannel->enableRead();

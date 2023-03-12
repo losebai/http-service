@@ -1,7 +1,6 @@
 #include <iostream>
 #include <unistd.h>
 #include <string.h>
-#include "headers/util.h"
 #include "headers/Buffer.h"
 #include "headers/InetAddress.h"
 #include "headers/Socket.h"

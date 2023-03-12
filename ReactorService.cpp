@@ -1,7 +1,4 @@
-// #include "headers/Reactor.h"
-#include <sys/epoll.h>
 #include <sys/socket.h>
-#include <unistd.h>
 #include <iostream>
 #include <arpa/inet.h>
 
@@ -24,7 +21,7 @@ int main() {
         return 1;
     }
 
-    struct sockaddr_in addr;
+    struct sockaddr_in addr{};
     addr.sin_family = AF_INET;
     addr.sin_port = htons(9999);
     addr.sin_addr.s_addr = inet_addr("172.26.59.146");
@@ -38,6 +35,6 @@ int main() {
         return 1;
     }
 
-    EventLoop* loop = new EventLoop();
+    auto* loop = new EventLoop();
     loop->eventLopp(listenfd);
 }

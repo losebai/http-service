@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/socket.h>
-#include <string.h>
+#include <cstring>
 #include <string>
 Socket::Socket() : fd(-1)
 {

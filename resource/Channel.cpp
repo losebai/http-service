@@ -1,7 +1,6 @@
 #include "headers/Channel.h"
 #include "headers/EventLoop.h"
 #include <unistd.h>
-#include "headers/Socket.h"
 #include <sys/epoll.h>
 
 // Channel::Channel(EventLoop *_loop, int _fd) : loop(_loop), fd(_fd), events(0), revents(0), inEpoll(false)
@@ -44,7 +43,7 @@ void Channel::handleEvent()
     //     else
     //         writeCallback();
     // }
-    if (ready & (EPOLLIN | EPOLLPRI))
+    if (ready & (EPOLLIN | EPOLLPRI)) // el
     {
         readCallback();
     }

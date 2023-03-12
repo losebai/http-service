@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <cstring>
-#include <errno.h>
+#include <cerrno>
 #include <cstdlib>
 #include "headers/Reactor.h"
 
@@ -113,9 +113,9 @@ public:
         close(epoll_fd);
     }
 
-    void registerEventHandler(EventHandler *eventHandler)
+    void registerEventHandler(EventHandler *eventHandler) const
     {
-        struct epoll_event event;
+        struct epoll_event event{};
         event.events = EPOLLIN; // POLLIN表示关心socket的读事件，EPOLLET表示使用边缘触发模式。在边缘触发模式下，只有当socket状态变化时，epoll_wait才会返回。这种模式需要使用非阻塞socket。
         event.data.ptr = eventHandler;
         // event.data.fd = eventHandler->getFd();
@@ -131,7 +131,7 @@ public:
     void eventLopp(int server_fd)
     {
 
-        struct epoll_event event;
+        struct epoll_event event{};
         event.events = EPOLLET; // POLLIN表示关心socket的读事件，EPOLLET表示使用边缘触发模式。在边缘触发模式下，只有当socket状态变化时，epoll_wait才会返回。这种模式需要使用非阻塞socket。
         EventHandler *conn = new Connection(server_fd);
         event.data.ptr = conn;
